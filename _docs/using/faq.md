@@ -74,3 +74,8 @@ It will look something like this:
 You can then change the values (after the colon on each line) to whatever you like. Make sure that you preserve variables that look like `{0}` and `%s` to ensure the bot can automatically insert things there.
 
 Finally, ensure that your JSON is formatted correctly and valid, by pasting it into a tool like [JSONLint](https://jsonlint.com/), and then change the option `i18nFile` in your config file to equal `config/i18n/whatever.json`. Launch the bot, and off you go! If your file can't be loaded, the bot will try to fallback to the default (`en.json`). If it can't do that, it will throw an error.
+
+
+### How to get a Spotify URI
+
+If you need a URI on Spotify, hold alt when hovering over the share button and it switches to "Copy URI".
