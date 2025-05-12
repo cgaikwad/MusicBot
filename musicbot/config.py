@@ -995,9 +995,7 @@ class Config:
             dest="concurrent_fragment_downloads",
             default=ConfigDefaults.concurrent_fragment_downloads,
             getter="getint",
-            comment=_Dd(
-                "Set the number of concurrent fragment downloads."
-            ),
+            comment=_Dd("Set the number of concurrent fragment downloads."),
         )
 
         ########################################################################

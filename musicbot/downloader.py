@@ -142,8 +142,10 @@ class Downloader:
 
         # apply download concurrency settings.
         if bot.config.concurrent_fragment_downloads != "1":
-            ytdl_format_options["concurrent_fragment_downloads"] = bot.config.concurrent_fragment_downloads
-        
+            ytdl_format_options["concurrent_fragment_downloads"] = (
+                bot.config.concurrent_fragment_downloads
+            )
+
         # enable verbose ytdlp logs if debug mode is enabled.
         if bot.config.debug_mode:
             ytdl_format_options["no_warnings"] = False
