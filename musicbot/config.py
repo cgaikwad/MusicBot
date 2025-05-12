@@ -989,6 +989,16 @@ class Config:
                 "Enable the song block list feature, without emptying the block list."
             ),
         )
+        self.concurrent_fragment_downloads: int = self.register.init_option(
+            section="MusicBot",
+            option="YtdlpConcurrentFrags",
+            dest="concurrent_fragment_downloads",
+            default=ConfigDefaults.concurrent_fragment_downloads,
+            getter="getint",
+            comment=_Dd(
+                "Set the number of concurrent fragment downloads."
+            ),
+        )
 
         ########################################################################
         # Files
@@ -1551,6 +1561,7 @@ class ConfigDefaults:
     ytdlp_proxy: str = ""
     ytdlp_user_agent: str = ""
     ytdlp_source_address: str = "*"
+    concurrent_fragment_downloads = 1
 
     pre_download_next_song: bool = True
     default_search_service: str = "ytsearch"
