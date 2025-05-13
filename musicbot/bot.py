@@ -5315,16 +5315,16 @@ class MusicBot(discord.Client):
         author: discord.Member,
         permissions: PermissionGroup,
         player: MusicPlayer,
+        leftover_args: List[str],
         position: str = "",
-        leftover_args: List[str] = [],
     ) -> CommandResponse:
         """
         Command to remove entries from the player queue.
         You can:
-        - Provide one position: `{command_prefix}remove 3` removes song at position 3.
-        - Provide two positions: `{command_prefix}remove 3 6` removes songs 3 through 6.
-        - Mention a user: `{command_prefix}remove @user` removes their entries.
-        - Provide nothing: `{command_prefix}remove` removes the last song. (LIFO-style)
+        - Provide one position: `remove 3` removes song at position 3.
+        - Provide two positions: `remove 3 6` removes songs 3 through 6.
+        - Mention a user: `remove @user` removes their entries.
+        - Provide nothing: `remove` removes the last song. (LIFO-style)
         """
 
         if not player.playlist.entries:
@@ -5336,8 +5336,8 @@ class MusicBot(discord.Client):
             try:
                 indexes.append(int(position) - 1)
                 indexes.append(int(leftover_args[0]) - 1)
-            except (ValueError, IndexError):
-                raise exceptions.CommandError("Song positions must be integers!")
+            except (ValueError, IndexError) as e:
+                raise exceptions.CommandError("Song positions must be integers!") from e
 
             for i in indexes:
                 if i < 0 or i > len(player.playlist.entries) - 1:
@@ -5376,70 +5376,73 @@ class MusicBot(discord.Client):
                 )
                 % {"from": indexes[0] + 1, "to": indexes[1] + 1},
             )
+
+        # else: (if no range is set, but user-mentions is set.)
+        if user_mentions:
+            for user in user_mentions:
+                if permissions.remove or author == user:
+                    try:
+                        entry_indexes = [
+                            e for e in player.playlist.entries if e.author == user
+                        ]
+                        for entry in entry_indexes:
+                            player.playlist.entries.remove(entry)
+                        entry_text = f"{len(entry_indexes)} item"
+                        if len(entry_indexes) > 1:
+                            entry_text += "s"
+                        return Response(
+                            _D("Removed `%(track)s` added by `%(user)s`", ssd_)
+                            % {"track": entry_text, "user": user.name},
+                        )
+
+                    except ValueError as e:
+                        raise exceptions.CommandError(
+                            "Nothing found in the queue from user `%(user)s`",
+                            fmt_args={"user": user.name},
+                        ) from e
+
+                raise exceptions.PermissionsError(
+                    "You do not have the permission to remove that entry from the queue.\n"
+                    "You must be the one who queued it or have instant skip permissions.",
+                )
+        # End user-mentions.
+
+        # if no argument was given, get the last item in the queue.
+        if not position:
+            idx = len(player.playlist.entries)
         else:
-            if user_mentions:
-                for user in user_mentions:
-                    if permissions.remove or author == user:
-                        try:
-                            entry_indexes = [
-                                e for e in player.playlist.entries if e.author == user
-                            ]
-                            for entry in entry_indexes:
-                                player.playlist.entries.remove(entry)
-                            entry_text = f"{len(entry_indexes)} item"
-                            if len(entry_indexes) > 1:
-                                entry_text += "s"
-                            return Response(
-                                _D("Removed `%(track)s` added by `%(user)s`", ssd_)
-                                % {"track": entry_text, "user": user.name},
-                            )
-
-                        except ValueError as e:
-                            raise exceptions.CommandError(
-                                "Nothing found in the queue from user `%(user)s`",
-                                fmt_args={"user": user.name},
-                            ) from e
-
-                    raise exceptions.PermissionsError(
-                        "You do not have the permission to remove that entry from the queue.\n"
-                        "You must be the one who queued it or have instant skip permissions.",
-                    )
-
-            if not position:
-                idx = len(player.playlist.entries)
-            else:
-                try:
-                    idx = int(position)
-                except (TypeError, ValueError) as e:
-                    raise exceptions.CommandError(
-                        "Invalid entry number. Use the queue command to find queue positions.",
-                    ) from e
-
-            if idx < 1 or idx > len(player.playlist.entries):
+            try:
+                idx = int(position)
+            except (TypeError, ValueError) as e:
                 raise exceptions.CommandError(
                     "Invalid entry number. Use the queue command to find queue positions.",
-                )
+                ) from e
 
-            if (
-                permissions.remove
-                or author == player.playlist.get_entry_at_index(idx - 1).author
-            ):
-                entry = player.playlist.delete_entry_at_index((idx - 1))
-                if entry.channel and entry.author:
-                    return Response(
-                        _D("Removed entry `%(track)s` added by `%(user)s`", ssd_)
-                        % {"track": _D(entry.title, ssd_), "user": entry.author.name},
-                    )
-
-                return Response(
-                    _D("Removed entry `%(track)s`", ssd_)
-                    % {"track": _D(entry.title, ssd_)},
-                )
-
-            raise exceptions.PermissionsError(
-                "You do not have the permission to remove that entry from the queue.\n"
-                "You must be the one who queued it or have instant skip permissions.",
+        if idx < 1 or idx > len(player.playlist.entries):
+            raise exceptions.CommandError(
+                "Invalid entry number. Use the queue command to find queue positions.",
             )
+
+        if (
+            permissions.remove
+            or author == player.playlist.get_entry_at_index(idx - 1).author
+        ):
+            entry = player.playlist.delete_entry_at_index((idx - 1))
+            if entry.channel and entry.author:
+                return Response(
+                    _D("Removed entry `%(track)s` added by `%(user)s`", ssd_)
+                    % {"track": _D(entry.title, ssd_), "user": entry.author.name},
+                )
+
+            return Response(
+                _D("Removed entry `%(track)s`", ssd_)
+                % {"track": _D(entry.title, ssd_)},
+            )
+
+        raise exceptions.PermissionsError(
+            "You do not have the permission to remove that entry from the queue.\n"
+            "You must be the one who queued it or have instant skip permissions.",
+        )
 
     @command_helper(
         usage=["{cmd} [force | f]"],

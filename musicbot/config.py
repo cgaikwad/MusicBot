@@ -968,6 +968,33 @@ class Config:
                 "To allow either IPv4 or v6, set this to:  *"
             ),
         )
+        self.ytdlp_concurrent_frags: int = self.register.init_option(
+            section="MusicBot",
+            option="YtdlpConcurrentFrags",
+            dest="ytdlp_concurrent_frags",
+            default=ConfigDefaults.ytdlp_concurrent_frags,
+            getter="getint",
+            comment=_Dd(
+                "The number of threads used to download a (one) track.\n"
+                "Higher number is faster at the cost of CPU and network load.\n"
+                "Effectively the same as ytdlp -N or --concurrent-fragments option.\n"
+                "This option has no effect on streams."
+            ),
+        )
+
+        self.downloader_threads_max: int = self.register.init_option(
+            section="MusicBot",
+            option="DownloaderTheadsMax",
+            dest="downloader_threads_max",
+            default=ConfigDefaults.downloader_threads_max,
+            getter="getint",
+            comment=_Dd(
+                "The number of threads MusicBot may use for yt-dlp calls.\n"
+                "Most useful for multi-server bot's with high traffic.\n"
+                "These threads are spawned as-needed, not immediately.\n"
+                "NOTE: Each thread may spawn up to YtdlpConcurrentFrags child-threads."
+            ),
+        )
 
         self.user_blocklist_enabled: bool = self.register.init_option(
             section="MusicBot",
@@ -988,18 +1015,6 @@ class Config:
             comment=_Dd(
                 "Enable the song block list feature, without emptying the block list."
             ),
-        )
-        self.concurrent_fragment_downloads: int = self.register.init_option(
-            section="MusicBot",
-            option="YtdlpConcurrentFrags",
-            dest="concurrent_fragment_downloads",
-            default=ConfigDefaults.concurrent_fragment_downloads,
-            getter="getint",
-            comment=_Dd(
-                "Sets the number of threads to use for native hls and dash downloads. "
-                "It is likely to increase network load exponentially, use caution." 
-                "The fragment option determines how many sub-threads a ytdlp thread may spawn to do downloads faster." 
-                "The downloader thread executor will wait for a thread in the main pool to be available before it runs the ytdlp extraction."),
         )
 
         ########################################################################
@@ -1563,7 +1578,8 @@ class ConfigDefaults:
     ytdlp_proxy: str = ""
     ytdlp_user_agent: str = ""
     ytdlp_source_address: str = "*"
-    concurrent_fragment_downloads = 1
+    ytdlp_concurrent_frags: int = 1
+    downloader_threads_max: int = 2
 
     pre_download_next_song: bool = True
     default_search_service: str = "ytsearch"

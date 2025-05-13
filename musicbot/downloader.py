@@ -20,7 +20,7 @@ from yt_dlp.networking.exceptions import (  # type: ignore[import-untyped]
 from yt_dlp.utils import DownloadError  # type: ignore[import-untyped]
 from yt_dlp.utils import UnsupportedError
 
-from .constants import DEFAULT_MAX_INFO_DL_THREADS, DEFAULT_MAX_INFO_REQUEST_TIMEOUT
+from .constants import DEFAULT_MAX_INFO_REQUEST_TIMEOUT
 from .exceptions import ExtractionError, MusicbotException
 from .i18n import _L
 from .spotify import Spotify
@@ -85,13 +85,22 @@ ytdl_format_options_immutable = MappingProxyType(
         "usenetrc": True,
         "no_color": True,
         "retries": 1,
-        "concurrent_fragment_downloads": None,
     }
 )
 
 
-# Fuck your useless bugreports message that gets two link embeds and confuses users
-youtube_dl.utils.bug_reports_message = lambda **args: ""
+def _ytdlp_bug_msg(*_args: Any, **_kwargs: Any) -> str:
+    """
+    Removes bug report text from exceptions to clean them up for musicbot.
+    It also issues a debug message to let users/devs know that ytdlp thinks the
+    error could be a bug worth reporting.
+    """
+    log.debug("YTDLP thinks there may be a bug in processing.")
+    return ""
+
+
+youtube_dl.utils.bug_reports_message = _ytdlp_bug_msg
+
 
 """
     Alright, here's the problem.  To catch youtube-dl errors for their useful information, I have to
@@ -112,7 +121,7 @@ class Downloader:
         self.download_folder: pathlib.Path = bot.config.audio_cache_path
         # NOTE: this executor may not be good for long-running downloads...
         self.thread_pool = ThreadPoolExecutor(
-            max_workers=DEFAULT_MAX_INFO_DL_THREADS,
+            max_workers=bot.config.downloader_threads_max,
             thread_name_prefix="MB_Downloader",
         )
         self._supported_search = [
@@ -141,9 +150,9 @@ class Downloader:
             ytdl_format_options["source_address"] = bot.config.ytdlp_source_address
 
         # apply download concurrency settings.
-        if bot.config.concurrent_fragment_downloads != "1":
+        if bot.config.ytdlp_concurrent_frags > 1:
             ytdl_format_options["concurrent_fragment_downloads"] = (
-                bot.config.concurrent_fragment_downloads
+                bot.config.ytdlp_concurrent_frags
             )
 
         # enable verbose ytdlp logs if debug mode is enabled.
