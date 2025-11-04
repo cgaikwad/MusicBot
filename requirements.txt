@@ -1,5 +1,5 @@
 pynacl
-discord.py [voice] >= 2.4.0
+discord.py [voice] == 2.6.4
 #discord.py [voice] @ git+https://github.com/Rapptz/discord.py
 pip
 yt-dlp
