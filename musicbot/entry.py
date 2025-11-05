@@ -742,7 +742,12 @@ class URLPlaylistEntry(BasePlaylistEntry):
                     fmt_args={"raw_error": e},
                 ) from e
 
+            except MusicbotException as e:
+                # prevent nesting of MusicbotException types to avoid odd/ugly/un-i18n messages.
+                raise e
+
             except Exception as e:
+                # all other "bare" exceptions should be converted to enable some translation and such.
                 log.error(
                     "Extraction encountered an unhandled exception.",
                     exc_info=self.playlist.bot.config.debug_mode,
