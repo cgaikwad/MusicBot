@@ -112,10 +112,9 @@ class Downloader:
             ytdl_format_options["proxy"] = bot.config.ytdlp_proxy
 
         # Try alternative YouTube player clients to bypass bot detection on cloud IPs.
-        # tv_embedded and mweb use different API endpoints that often work from servers.
         ytdl_format_options["extractor_args"] = {
             "youtube": {
-                "player_client": ["tv_embedded", "mweb"],
+                "player_client": ["web_creator", "android_vr", "mweb"],
             }
         }
 
