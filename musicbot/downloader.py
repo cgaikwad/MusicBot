@@ -111,13 +111,6 @@ class Downloader:
             log.info("Yt-dlp will use your configured proxy server.")
             ytdl_format_options["proxy"] = bot.config.ytdlp_proxy
 
-        # Try alternative YouTube player clients to bypass bot detection on cloud IPs.
-        ytdl_format_options["extractor_args"] = {
-            "youtube": {
-                "player_client": ["ios", "web", "mweb"],
-            }
-        }
-
         if bot.config.ytdlp_use_oauth2:
             # set the login info so oauth2 is prompted.
             ytdl_format_options["username"] = "oauth2"
