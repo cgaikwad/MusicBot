@@ -113,7 +113,8 @@ class Downloader:
 
         if bot.config.ytdlp_use_oauth2:
             # set the login info so oauth2 is prompted.
-            ytdl_format_options["username"] = "oauth2"
+            # yt-dlp native OAuth2 uses username "oauth" (not "oauth2").
+            ytdl_format_options["username"] = "oauth"
             ytdl_format_options["password"] = ""
             # Skip MusicBot's built-in OAuth2 plugin (outdated client IDs).
             # Let yt-dlp's native OAuth2 handle auth with its own working client IDs.
