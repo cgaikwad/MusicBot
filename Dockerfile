@@ -24,6 +24,9 @@ RUN apk update && apk add --no-cache \
 # Install pip dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
 
+# Upgrade yt-dlp to latest (frequent YouTube bypass fixes)
+RUN pip3 install --no-cache-dir -U yt-dlp
+
 # Clean up build dependencies
 RUN apk del .build-deps
 
