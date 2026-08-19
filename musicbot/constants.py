@@ -118,7 +118,7 @@ DEFAULT_PRE_DOWNLOAD_DELAY: float = 4.0
 
 # Time in seconds to wait before oauth2 authorization fails.
 # This provides time to authorize as well as prevent process hang at shutdown.
-DEFAULT_YTDLP_OAUTH2_TTL: float = 180.0
+DEFAULT_YTDLP_OAUTH2_TTL: float = 600.0
 
 # Default / fallback scopes used for OAuth2 ytdlp plugin.
 DEFAULT_YTDLP_OAUTH2_SCOPES: str = (

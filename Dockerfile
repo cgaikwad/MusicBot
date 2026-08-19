@@ -27,9 +27,6 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # Upgrade yt-dlp to latest (frequent YouTube bypass fixes)
 RUN pip3 install --no-cache-dir -U yt-dlp
 
-# Install official yt-dlp OAuth2 plugin for YouTube auth
-RUN pip3 install --no-cache-dir yt-dlp-youtube-oauth2
-
 # Clean up build dependencies
 RUN apk del .build-deps
 
