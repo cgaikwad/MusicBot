@@ -111,43 +111,14 @@ class Downloader:
             log.info("Yt-dlp will use your configured proxy server.")
             ytdl_format_options["proxy"] = bot.config.ytdlp_proxy
 
-        # Try alternative YouTube player clients to bypass bot detection on cloud IPs.
-        ytdl_format_options["extractor_args"] = {
-            "youtube": {
-                "player_client": ["web_creator", "android_vr", "mweb"],
-            }
-        }
-
         if bot.config.ytdlp_use_oauth2:
             # set the login info so oauth2 is prompted.
             ytdl_format_options["username"] = "oauth2"
             ytdl_format_options["password"] = ""
-            # ytdl_format_options["extractor_args"] = {
-            #    "youtubetab": {"skip": ["authcheck"]}
-            # }
-
-            # check if the original plugin is installed, and use it instead of ours.
-            # It's worth doing this because our version might fail to work,
-            # even if the original causes infinite loop hangs while auth is pending...
-            try:
-                oauth_spec = importlib.util.find_spec(
-                    "yt_dlp_plugins.extractor.youtubeoauth"
-                )
-            except ModuleNotFoundError:
-                oauth_spec = None
-
-            if oauth_spec is not None:
-                log.warning(
-                    "Original OAuth2 plugin is installed and will be used instead.\n"
-                    "This may cause MusicBot to not close completely, or hang pending authorization!\n"
-                    "To close MusicBot, you must manually Kill the MusicBot process!\n"
-                    "Yt-dlp is being set to show warnings and other log messages, to show the Auth code.\n"
-                    "Uninstall the yt-dlp-youtube-oauth2 package to use integrated OAuth2 features instead."
-                )
-                ytdl_format_options["quiet"] = False
-                ytdl_format_options["no_warnings"] = False
-            else:
-                enable_ytdlp_oauth2_plugin(self.bot.config)
+            # Skip MusicBot's built-in OAuth2 plugin (outdated client IDs).
+            # Let yt-dlp's native OAuth2 handle auth with its own working client IDs.
+            ytdl_format_options["quiet"] = False
+            ytdl_format_options["no_warnings"] = False
 
         if self.download_folder:
             # print("setting template to " + os.path.join(download_folder, otmpl))
